@@ -226,7 +226,7 @@ pub fn sidecar_text(file_name: &str, title: &str, generated_by: &str) -> String 
 
 /// The `ATTRIBUTION.md` table row for a golden image at workspace-relative `rel`.
 pub fn attribution_row(rel: &str, generated_by: &str) -> String {
-    format!("| `{rel}` | FilmCraft contributors | Original work: golden reference rendered by FilmCraft ({generated_by}) | MIT OR Apache-2.0 |")
+    format!("| `{rel}` | FilmKoja contributors | Original work: golden reference rendered by FilmKoja ({generated_by}) | MIT OR Apache-2.0 |")
 }
 
 /// Compare `actual` with the golden PNG at `golden` (or bless it). `title` and `generated_by`

@@ -29,6 +29,8 @@ macro_rules! tlf {
     };
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+mod license;
 pub mod automation;
 pub mod brand;
 pub mod calc;
@@ -159,7 +161,7 @@ pub struct HostHooks {
     /// running while the dialog is open (the desktop app on Linux, #260); without it the
     /// synchronous pickers above are used.
     pub run_dialog: Option<Box<dyn FnMut(native_dialogs::FileDialog) -> Receiver<Vec<String>>>>,
-    /// Open a URL in the system browser (Help menu links, About dialog, Discord button, Import
+    /// Open a URL in the system browser (Help menu links, About dialog, Import
     /// screen). Without it, or when it fails, links go through `egui::Context::open_url`, which
     /// opens a new tab on the web (the native egui backend is built without its `links` feature).
     pub open_url: Option<Box<dyn FnMut(&str) -> Result<(), String>>>,
@@ -268,7 +270,7 @@ pub(crate) const EXPORT_SAVE_DIALOGS: [(&str, &str, &str); 7] = [
     ("file.exportFcpxml", "FCPXML", "fcpxml"),
     ("file.exportOtio", "OpenTimelineIO", "otio"),
     ("file.exportAle", "Avid Log Exchange", "ale"),
-    ("file.exportSelectionProject", "FilmCraft Project", "fcproj"),
+    ("file.exportSelectionProject", "FilmKoja Project", "fcproj"),
 ];
 
 pub struct FilmcraftApp {
@@ -1928,13 +1930,13 @@ impl FilmcraftApp {
 }
 
 impl FilmcraftApp {
-    /// The "FilmCraft hit an error" window after a caught UI panic. Automation ids:
+    /// The "FilmKoja hit an error" window after a caught UI panic. Automation ids:
     /// `error.dismiss`, `error.save`.
     fn error_window(&mut self, ctx: &egui::Context) {
         let Some(msg) = self.ui_error.clone() else { return };
         let mut close = false;
-        egui::Window::new(tl!("FilmCraft hit an error"))
-            .id(egui::Id::new("FilmCraft hit an error"))
+        egui::Window::new(tl!("FilmKoja hit an error"))
+            .id(egui::Id::new("FilmKoja hit an error"))
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER)
@@ -2099,6 +2101,11 @@ impl eframe::App for FilmcraftApp {
     }
 
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        // Without an activated Kojalytics license the window shows the lock screen instead.
+        #[cfg(not(target_arch = "wasm32"))]
+        if !crate::license::gate(ui) {
+            return;
+        }
         if !self.fonts_ready {
             ui.ctx().request_repaint();
             return;

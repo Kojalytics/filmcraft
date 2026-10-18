@@ -19,7 +19,6 @@
 //! | `projectPanel.*` | Project panel: List / Icon / Toggle View, Hover Scrub, thumbnail size, Move / Extend Selection | (Project) |
 //! | `textPanel.*` | Text panel transcript: word / line / segment navigation and selection, Delete, Ripple Delete, Show Program Transcript | (Text) |
 //! | `graphics.beginTextEditing` | Begin Text Editing for a Graphic Layer | Cmd+Alt+' |
-//! | `help.filmcraftHelp` | Help (Premiere Help…) | F1 |
 //! | `app.quit` | Quit | Cmd+Q |
 
 use serde::{Deserialize, Serialize};
@@ -128,12 +127,8 @@ pub const COMMANDS: &[UiCommand] = &[
     uic!("textPanel.rippleDelete", "Ripple Delete", [], None),
     uic!("textPanel.showProgramTranscript", "Show Program Transcript", [], None),
     uic!("graphics.beginTextEditing", "Begin Text Editing for a Graphic Layer", [], Some("Cmd+Alt+'")),
-    uic!("help.filmcraftHelp", "FilmCraft Help…", ["Help"], Some("F1")),
-    uic!("app.quit", "Quit FilmCraft", [], Some("Cmd+Q")),
+    uic!("app.quit", "Quit FilmKoja", [], Some("Cmd+Q")),
 ];
-
-/// FilmCraft's documentation (Help ▸ FilmCraft Help…, F1).
-pub const HELP_URL: &str = "https://github.com/storytold/filmcraft/tree/main/docs";
 
 const HEIGHT_STEP: f32 = 12.0;
 const MIN_TRACK_H: f32 = 24.0;
@@ -209,10 +204,6 @@ pub fn route(app: &mut FilmcraftApp, ctx: &egui::Context, id: &str, params: &Val
             Ok(json!({"scroll": tv.target_scroll}))
         }
         "graphics.beginTextEditing" => begin_text_editing(app),
-        "help.filmcraftHelp" => {
-            crate::links::open(app, ctx, HELP_URL);
-            Ok(json!({"url": HELP_URL}))
-        }
         "app.quit" => {
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             Ok(Value::Null)

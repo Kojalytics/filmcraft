@@ -1,30 +1,16 @@
-//! Community and project links (Help menu, About dialog, header Discord button, Home screen).
-//!
-//! FilmCraft is part of the ArtCraft family: the community lives on the ArtCraft Discord, every
-//! app has a page on the ArtCraft website and a public GitHub repository.
+//! Project links (Help menu, About dialog, Home screen): the website and this app's page.
 
-/// The app's short name, used in the website and repository URLs.
+/// The app's short name, used in the website URLs.
 pub const APP: &str = "filmcraft";
 
-/// The ArtCraft community Discord.
-pub const DISCORD: &str = "https://discord.gg/artcraft";
 /// The ArtCraft website.
-pub const WEBSITE: &str = "https://getartcraft.com";
+pub const WEBSITE: &str = "https://kojalytics.com";
 /// FilmCraft's page on the ArtCraft website.
-pub const APP_PAGE: &str = "https://getartcraft.com/apps/filmcraft";
-/// FilmCraft's source repository.
-pub const GITHUB: &str = "https://github.com/storytold/filmcraft";
-/// New issue on FilmCraft's repository.
-pub const ISSUES: &str = "https://github.com/storytold/filmcraft/issues";
+pub const APP_PAGE: &str = "https://www.kojalytics.com/koja-apps";
 
 /// (command id, label, url) for every link, in menu order.
-pub const ALL: [(&str, &str, &str); 5] = [
-    ("help.discord", "Join the ArtCraft Discord…", DISCORD),
-    ("help.website", "ArtCraft Website", WEBSITE),
-    ("help.appPage", "FilmCraft on getartcraft.com", APP_PAGE),
-    ("help.github", "FilmCraft on GitHub", GITHUB),
-    ("help.reportIssue", "Report an Issue…", ISSUES),
-];
+pub const ALL: [(&str, &str, &str); 2] =
+    [("help.website", "Kojalytics Website", WEBSITE), ("help.appPage", "FilmKoja on kojalytics.com", APP_PAGE)];
 
 /// A link the web browser couldn't open (`ui.failedLink`): the address and the reason.
 #[derive(Clone, Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -41,15 +27,14 @@ pub fn url_for(command: &str) -> Option<&'static str> {
 /// What a Help menu item does, shown when the pointer rests on it: the address a link opens in
 /// the web browser, or that the item stays inside FilmCraft.
 pub fn menu_hint(command: &str) -> Option<String> {
-    let url = if command == "help.filmcraftHelp" { Some(crate::panels::keyboard::HELP_URL) } else { url_for(command) };
-    if let Some(url) = url {
+    if let Some(url) = url_for(command) {
         return Some(tlf!("Opens in your web browser: {url}", url));
     }
     Some(
         match command {
             "help.revealLogFiles" => tl!("Saves this session's log and shows it in your file manager."),
             "help.systemCompatibilityReport" => tl!("Shows a report on this computer."),
-            "app.about" => tl!("Shows the version, community links and credits in a FilmCraft window."),
+            "app.about" => tl!("Shows the version, community links and credits in a FilmKoja window."),
             _ => return None,
         }
         .to_string(),
@@ -127,15 +112,14 @@ mod tests {
     #[test]
     fn urls_follow_the_artcraft_scheme() {
         assert_eq!(APP_PAGE, format!("{WEBSITE}/apps/{APP}"));
-        assert_eq!(GITHUB, format!("https://github.com/storytold/{APP}"));
         assert!(ALL.iter().all(|(id, _, u)| id.starts_with("help.") && u.starts_with("https://")));
-        assert_eq!(url_for("help.discord"), Some(DISCORD));
+        assert_eq!(url_for("help.website"), Some(WEBSITE));
         assert_eq!(url_for("help.nope"), None);
     }
 
     #[test]
     fn links_open_through_the_host_hook() {
-        // #642: on the desktop every link (Help menu, About, Discord button, Import screen) must
+        // #642: on the desktop every link (Help menu, About, Import screen) must
         // reach the host's browser opener; `ctx.open_url` alone is a no-op natively.
         use std::cell::RefCell;
         use std::rc::Rc;
@@ -152,18 +136,18 @@ mod tests {
             assert_eq!(r["url"], url, "{id}");
             assert_eq!(opened.borrow().last().map(String::as_str), Some(url), "{id}");
         }
-        open(&mut app, &ctx, DISCORD);
-        assert_eq!(opened.borrow().last().map(String::as_str), Some(DISCORD));
+        open(&mut app, &ctx, WEBSITE);
+        assert_eq!(opened.borrow().last().map(String::as_str), Some(WEBSITE));
         assert_eq!(opened.borrow().len(), ALL.len() + 1);
 
         // A failing opener falls back to `ctx.open_url` instead of losing the click.
         app.hooks.open_url = Some(Box::new(|_: &str| Err("no browser".into())));
-        open(&mut app, &ctx, ISSUES);
+        open(&mut app, &ctx, APP_PAGE);
         let fallback: Vec<String> =
             ctx.output(|o| o.commands.iter().filter_map(|c| if let egui::OutputCommand::OpenUrl(u) = c { Some(u.url.clone()) } else { None }).collect());
-        assert_eq!(fallback, [ISSUES]);
+        assert_eq!(fallback, [APP_PAGE]);
         // ... and keeps the address on screen with the reason until the dialog is closed
-        assert_eq!(app.ui.failed_link, Some(FailedLink { url: ISSUES.into(), error: "no browser".into() }));
+        assert_eq!(app.ui.failed_link, Some(FailedLink { url: APP_PAGE.into(), error: "no browser".into() }));
     }
 
     /// The failed-link dialog shows the address until it is closed, and Copy copies it.
@@ -180,11 +164,11 @@ mod tests {
             out.textures_delta.clear();
             out
         };
-        open(&mut app, &egui::Context::default(), GITHUB);
+        open(&mut app, &egui::Context::default(), WEBSITE);
         for _ in 0..3 {
             frame(&mut app, Vec::new());
         }
-        assert!(app.auto.elements.iter().find(|e| e.id == "failedLink.url").is_some_and(|e| e.label == GITHUB), "address shown");
+        assert!(app.auto.elements.iter().find(|e| e.id == "failedLink.url").is_some_and(|e| e.label == WEBSITE), "address shown");
         let at = |app: &crate::FilmcraftApp, id: &str| {
             app.auto.elements.iter().find(|e| e.id == id).map(|e| egui::pos2(e.rect[0] + e.rect[2] / 2.0, e.rect[1] + e.rect[3] / 2.0)).unwrap()
         };
@@ -200,7 +184,7 @@ mod tests {
             copied
         };
         let copy = at(&app, "failedLink.copy");
-        assert_eq!(click(&mut app, copy), [GITHUB]);
+        assert_eq!(click(&mut app, copy), [WEBSITE]);
         // other frames (another window in front) don't close it; Close does
         for _ in 0..3 {
             frame(&mut app, Vec::new());
@@ -218,7 +202,6 @@ mod tests {
             let hint = menu_hint(id).unwrap();
             assert!(hint.contains(url) && hint.contains("web browser"), "{id}: {hint}");
         }
-        assert!(menu_hint("help.filmcraftHelp").unwrap().contains(crate::panels::keyboard::HELP_URL));
         let help_items: Vec<String> = crate::menus::menu_items(&crate::FilmcraftApp::new(filmcraft_engine::Session::default()))
             .into_iter()
             .filter(|it| it.path.first().map(String::as_str) == Some("Help"))
@@ -227,7 +210,7 @@ mod tests {
         assert!(help_items.len() >= ALL.len() + 3, "{help_items:?}");
         for id in &help_items {
             let hint = menu_hint(id).unwrap_or_else(|| panic!("{id} has no hover hint"));
-            let link = url_for(id).is_some() || id == "help.filmcraftHelp";
+            let link = url_for(id).is_some();
             assert_eq!(hint.contains("web browser"), link, "{id}: {hint}");
         }
         assert_eq!(menu_hint("edit.undo"), None);
