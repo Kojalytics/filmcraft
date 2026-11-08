@@ -9,13 +9,13 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package
       Name="FilmKoja"
-      Manufacturer="Learning Machines LLC"
+      Manufacturer="Kojalytics"
       Version="$(var.Version)"
-      UpgradeCode="31E6FB14-9DBC-41DD-B24B-26B71FB31B62"
+      UpgradeCode="6B022199-283B-5E34-878C-45F6074BF8BE"
       Scope="perMachine"
       Compressed="yes"
       Language="1033">
-    <SummaryInformation Description="FilmKoja video editor" Manufacturer="Learning Machines LLC" />
+    <SummaryInformation Description="FilmKoja video editor" Manufacturer="Kojalytics" />
     <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
          (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
     <MajorUpgrade AllowSameVersionUpgrades="yes"
@@ -40,7 +40,7 @@
 
   <Fragment>
     <ComponentGroup Id="FilmcraftFiles" Directory="INSTALLFOLDER">
-      <Component Id="FilmcraftApp" Guid="15933017-925B-4963-8992-52000EB26AAA">
+      <Component Id="FilmcraftApp" Guid="D7C95306-04BC-5538-BEDE-85D390C25A73">
         <File Id="FilmcraftExe" Source="$(var.BinDir)\filmcraft.exe" KeyPath="yes">
           <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="FilmKoja"
               Description="FilmKoja video editor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"

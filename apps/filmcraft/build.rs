@@ -21,6 +21,7 @@ mod windows {
         let mut res = winresource::WindowsResource::new();
         res.set_icon("../../assets/app-icon/filmcraft.ico")
             .set("ProductName", "FilmKoja")
+            .set("CompanyName", "Kojalytics")
             .set("FileDescription", "FilmKoja video editor")
             .set("LegalCopyright", "Copyright (c) the FilmKoja contributors. MIT OR Apache-2.0.")
             .set("OriginalFilename", "filmcraft.exe")
